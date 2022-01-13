@@ -9,7 +9,7 @@ import lombok.NoArgsConstructor;
 import lombok.Setter;
 
 
-@Table(name = "TRANSACTION")
+@Table
 @Getter
 @Setter
 @AllArgsConstructor

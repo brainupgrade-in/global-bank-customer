@@ -31,6 +31,7 @@ import lombok.extern.slf4j.Slf4j;
 //@CrossOrigin(origins = "http://localhost:4200")
 @RestController
 @Slf4j
+@CrossOrigin(origins = "*")
 public class CustomerController {
 
 	@Autowired
