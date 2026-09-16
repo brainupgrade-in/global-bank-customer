@@ -2,10 +2,8 @@ package in.brainupgrade.customerservice.service;
 
 import java.util.List;
 import java.util.Optional;
-
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
-
 import in.brainupgrade.customerservice.exception.AccessDeniedException;
 import in.brainupgrade.customerservice.exception.CustomerAlreadyExistException;
 import in.brainupgrade.customerservice.feign.AccountFeign;
@@ -15,20 +13,15 @@ import in.brainupgrade.customerservice.model.AppUser;
 import in.brainupgrade.customerservice.model.AuthenticationResponse;
 import in.brainupgrade.customerservice.model.CustomerEntity;
 import in.brainupgrade.customerservice.repository.CustomerRepository;
-import lombok.extern.slf4j.Slf4j;
 
-@Slf4j
 @Service
 public class CustomerServiceImpl implements CustomerService {
-
+	private static final org.slf4j.Logger log = org.slf4j.LoggerFactory.getLogger(CustomerServiceImpl.class);
 	private static final String CUSTOMER = "CUSTOMER";
-
 	@Autowired
 	AuthorizationFeign authorizationFeign;
-
 	@Autowired
 	AccountFeign accountFeign;
-
 	@Autowired
 	CustomerRepository customerRepo;
 
@@ -46,10 +39,8 @@ public class CustomerServiceImpl implements CustomerService {
 	@Override
 	public AuthenticationResponse hasEmployeePermission(String token) {
 		AuthenticationResponse validity = authorizationFeign.getValidity(token);
-		if (!authorizationFeign.getRole(validity.getUserid()).equals("EMPLOYEE"))
-			throw new AccessDeniedException("NOT ALLOWED");
-		else
-			return validity;
+		if (!authorizationFeign.getRole(validity.getUserid()).equals("EMPLOYEE")) throw new AccessDeniedException("NOT ALLOWED");
+		 else return validity;
 	}
 
 	/**
@@ -57,13 +48,9 @@ public class CustomerServiceImpl implements CustomerService {
 	 */
 	@Override
 	public AuthenticationResponse hasCustomerPermission(String token) {
-
 		AuthenticationResponse validity = authorizationFeign.getValidity(token);
-
-		if (!authorizationFeign.getRole(validity.getUserid()).equals(CUSTOMER))
-			throw new AccessDeniedException("NOT ALLOWED");
-		else
-			return validity;
+		if (!authorizationFeign.getRole(validity.getUserid()).equals(CUSTOMER)) throw new AccessDeniedException("NOT ALLOWED");
+		 else return validity;
 	}
 
 	/**
@@ -71,22 +58,17 @@ public class CustomerServiceImpl implements CustomerService {
 	 */
 	@Override
 	public CustomerEntity createCustomer(String token, CustomerEntity customer) {
-
 		CustomerEntity checkCustomerExists = getCustomerDetail(token, customer.getUserid());
-
 		// Checks if customer already exists
 		if (checkCustomerExists != null) {
 			throw new CustomerAlreadyExistException("Customer already exist");
 		} else {
-			AppUser user = new AppUser(customer.getUserid(), customer.getUsername(), customer.getPassword(), null,
-					CUSTOMER);
+			AppUser user = new AppUser(customer.getUserid(), customer.getUsername(), customer.getPassword(), null, CUSTOMER);
 			authorizationFeign.createUser(user);
 		}
-
 		for (Account acc : customer.getAccounts()) {
 			accountFeign.createAccount(token, customer.getUserid(), acc);
 		}
-
 		customerRepo.save(customer);
 		log.info("Consumer details saved.");
 		return customer;
@@ -98,16 +80,10 @@ public class CustomerServiceImpl implements CustomerService {
 	@Override
 	public CustomerEntity getCustomerDetail(String token, String id) {
 		Optional<CustomerEntity> customer = customerRepo.findById(id);
-
-		if (!customer.isPresent())
-			return null;
-
+		if (!customer.isPresent()) return null;
 		log.info("Consumer details fetched --> ", customer.get().toString());
-
 		List<Account> list = accountFeign.getCustomerAccount(token, id);
-
 		customer.get().setAccounts(list);
-
 		return customer.get();
 	}
 
@@ -122,16 +98,13 @@ public class CustomerServiceImpl implements CustomerService {
 //			customerRepo.deleteById(id);
 //		else
 //			return false;
-
 		Optional<CustomerEntity> optional = customerRepo.findById(id);
 		if (optional.isPresent()) {
 			customerRepo.deleteById(id);
 		} else {
 			return false;
 		}
-
 		log.info("Consumer details deleted.");
-
 		return true;
 	}
 
@@ -141,13 +114,10 @@ public class CustomerServiceImpl implements CustomerService {
 	@Override
 	public CustomerEntity saveCustomer(String token, CustomerEntity customer) {
 		CustomerEntity checkCustomerExists = getCustomerDetail(token, customer.getUserid());
-
 		if (checkCustomerExists == null) {
-			AppUser user = new AppUser(customer.getUserid(), customer.getUsername(), customer.getPassword(), null,
-					CUSTOMER);
+			AppUser user = new AppUser(customer.getUserid(), customer.getUsername(), customer.getPassword(), null, CUSTOMER);
 			authorizationFeign.createUser(user);
 		}
-
 		return customerRepo.save(customer);
 	}
 
@@ -165,21 +135,15 @@ public class CustomerServiceImpl implements CustomerService {
 //		}
 //
 //		return customerRepo.save(toUpdate);
-
 		Optional<CustomerEntity> optional = customerRepo.findById(customer.getUserid());
 		CustomerEntity toUpdate = new CustomerEntity();
-
 		if (optional.isPresent()) {
-
 			toUpdate = optional.get();
-
 			toUpdate.setAccounts(customer.getAccounts());
 		}
-
 		for (Account acc : customer.getAccounts()) {
 			accountFeign.createAccount(token, customer.getUserid(), acc);
 		}
-
 		return customerRepo.save(toUpdate);
 	}
 
@@ -194,5 +158,4 @@ public class CustomerServiceImpl implements CustomerService {
 //		}
 		return (List<CustomerEntity>) customerList;
 	}
-
 }

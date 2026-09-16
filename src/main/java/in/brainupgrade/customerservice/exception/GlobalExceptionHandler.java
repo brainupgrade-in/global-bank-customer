@@ -15,7 +15,6 @@ import org.springframework.web.bind.annotation.RestControllerAdvice;
 import feign.FeignException;
 import in.brainupgrade.customerservice.model.CustomErrorResponse;
 
-
 @RestControllerAdvice
 public class GlobalExceptionHandler {
 
@@ -80,7 +79,6 @@ public class GlobalExceptionHandler {
 		map.put("status", status);
 		return map;
 	}
-
 
 	@ExceptionHandler(MethodArgumentNotValidException.class)
 	public HashMap<String, Object> handleMethodArgumentNotValidException(MethodArgumentNotValidException e) {

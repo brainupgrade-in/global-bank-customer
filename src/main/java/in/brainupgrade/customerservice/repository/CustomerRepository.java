@@ -5,7 +5,6 @@ import org.springframework.stereotype.Repository;
 
 import in.brainupgrade.customerservice.model.CustomerEntity;
 
-
 @Repository
 public interface CustomerRepository extends CrudRepository<CustomerEntity, String> {
 
